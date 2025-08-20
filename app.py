@@ -19,6 +19,10 @@ db_config = {
 def home():
     return "¡Hola, backend funcionando!"
 
+@app.get("/health")
+def health():
+    return jsonify({"status": "ok"}), 200
+
 # ---------- LISTAR PRODUCTOS con búsqueda, filtros, orden y paginación ----------
 @app.get("/productos")
 def get_productos():
@@ -185,12 +189,18 @@ def create_producto():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# ---------- OBTENER PRODUCTO POR ID ----------
+# ---------- OBTENER PRODUCTO POR ID (shape uniforme con la lista) ----------
 @app.get("/productos/<int:pid>")
 def get_producto(pid):
     conn = mysql.connector.connect(**db_config)
     cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT * FROM productos WHERE id = %s", (pid,))
+    cur.execute("""
+        SELECT p.id, p.nombre, p.descripcion, p.precio, p.stock,
+               p.marca_id AS marcaId, p.categoria_id AS categoriaId,
+               p.created_at, p.updated_at
+          FROM productos p
+         WHERE p.id = %s
+    """, (pid,))
     row = cur.fetchone()
     cur.close()
     conn.close()
