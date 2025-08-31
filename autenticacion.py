@@ -50,7 +50,7 @@ def login():
         if not row or not check_password_hash(row["password_hash"], password):
             return err("Credenciales inválidas", 401)
         # claims incluye rol para checks
-        token = create_access_token(identity=row["id"], additional_claims={"usuario": row["usuario"], "rol": row["rol"]})
+        token = create_access_token(identity=str(row["id"]), additional_claims={"usuario": row["usuario"], "rol": row["rol"]})
         return ok({"token": token, "usuario": row["usuario"], "rol": row["rol"]})
     finally:
         cur.close()
